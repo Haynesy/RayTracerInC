@@ -1,3 +1,4 @@
+@echo off
 
 REM Create image and output to file
 .\bin\main.exe > .\bin\image.ppm
