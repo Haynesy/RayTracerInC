@@ -1,2 +1,5 @@
 @echo off
-call "C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/VC/Auxiliary/Build/vcvarsall.bat" x64
+
+set DevSetupFile="%VCVARS_PATH%/vcvarsall.bat"
+echo %DevSetupFile%
+call %DevSetupFile% x64
