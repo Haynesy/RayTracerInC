@@ -16,6 +16,7 @@ struct Render {
 };
 
 Vector WHITE = vector(1.0f, 1.0f, 1.0f);
+Vector RED = vector(1.0f, 0.0f, 0.0f);
 Vector LIGHT_BLUE = vector(0.5f, 0.7f, 1.0f);
 Render render = {};
     
@@ -23,23 +24,27 @@ void writePpmHeader(int width, int height){
     cout << "P3\n" << width << " " << height << "\n255\n";    
 }
 
-void writePpmPixel(int red, int green, int blue){
+void writePpmPixel(Vector vec){
+    int red = int(255.99 * vec.x);
+    int green = int(255.99 * vec.y);
+    int blue = int(255.99 * vec.z);
     cout << red << " " << green << " " << blue << "\n";
 }
 
-inline int asRed(Vector vec){
-    return int(255.99 * vec.x);
-}
-
-inline int asGreen(Vector vec){
-    return int(255.99 * vec.y);
-}
-
-inline int asBlue(Vector vec){
-    return int(255.99 * vec.z);
+bool hitSphere(Vector center, float radius, Ray ray){
+    Vector originCenter = subtract(ray.origin, center);
+    float a = dot(ray.direction, ray.direction);
+    float b = 2.0f * dot(originCenter, ray.direction);
+    float c = dot(originCenter, originCenter) - radius * radius;
+    float discriminant = b * b - 4 * a * c;
+    return discriminant > 0;
 }
 
 inline Vector color(Ray ray){
+    if(hitSphere(vector(0.0f, 0.0f, -1.0f), 0.5, ray))
+    {
+        return RED;
+    }
     Vector unitDirection = makeUnitVector(ray.direction);
     float t = 0.5f * (unitDirection.y + 1.0f);
     Vector backgroundWhite = multiply(WHITE, 1.0f - t);
@@ -76,11 +81,7 @@ void writePpmFile(int width, int height){
             Ray rayPosition = ray(render.origin, uvPosition);
             Vector clr = color(rayPosition);
             
-            int red = asRed(clr);
-            int green = asGreen(clr);
-            int blue = asBlue(clr);
-
-            writePpmPixel(red, green, blue);
+            writePpmPixel(clr);
         }
     }
 }
