@@ -1,33 +1,87 @@
 #ifndef IMAGE_PPM
 #define IMAGE_PPM
 
+
 #include <iostream>
+#include "vector.cpp"
+#include "ray.cpp"
 
 using namespace std;
 
+struct Render {
+    Vector lowerLeftCorner;
+    Vector horizontal;
+    Vector vertical;
+    Vector origin;
+};
+
+Vector WHITE = vector(1.0f, 1.0f, 1.0f);
+Vector RED = vector(1.0f, 0.0f, 0.0f);
+Vector LIGHT_BLUE = vector(0.5f, 0.7f, 1.0f);
+Render render = {};
+    
 void writePpmHeader(int width, int height){
     cout << "P3\n" << width << " " << height << "\n255\n";    
 }
 
-void writePpmPixel(int red, int green, int blue){
+void writePpmPixel(Vector vec){
+    int red = int(255.99 * vec.x);
+    int green = int(255.99 * vec.y);
+    int blue = int(255.99 * vec.z);
     cout << red << " " << green << " " << blue << "\n";
+}
+
+bool hitSphere(Vector center, float radius, Ray ray){
+    Vector originCenter = subtract(ray.origin, center);
+    float a = dot(ray.direction, ray.direction);
+    float b = 2.0f * dot(originCenter, ray.direction);
+    float c = dot(originCenter, originCenter) - radius * radius;
+    float discriminant = b * b - 4 * a * c;
+    return discriminant > 0;
+}
+
+inline Vector color(Ray ray){
+    if(hitSphere(vector(0.0f, 0.0f, -1.0f), 0.5, ray))
+    {
+        return RED;
+    }
+    Vector unitDirection = makeUnitVector(ray.direction);
+    float t = 0.5f * (unitDirection.y + 1.0f);
+    Vector backgroundWhite = multiply(WHITE, 1.0f - t);
+    Vector backgrountBlue = multiply(LIGHT_BLUE, t);
+    return add(backgroundWhite, backgrountBlue);
+}
+
+inline Vector rayPosition(float u, float v){
+    Vector horizontal = multiply(render.horizontal, u);
+    Vector vertical = multiply(render.vertical, v);
+    Vector position = add(horizontal, vertical);
+    Vector normalizedPosition = add(render.lowerLeftCorner, position);
+    return normalizedPosition;
 }
 
 void writePpmFile(int width, int height){
 
     writePpmHeader(width, height);
 
+    render.lowerLeftCorner = vector(-2.0f, -1.0f, -1.0f);
+    render.horizontal = vector(4.0f, 0.0f, 0.0f);
+    render.vertical = vector(0.0f, 2.0f, 0.0f);
+    render.origin = vector(0.0f, 0.0f, 0.0f);
+
+    //Render render = {};
     for(int y = height - 1; y >= 0; y--){
         for(int x = 0; x < width; x++){
-            float r  = float(x) / float(width);
-            float g  = float(y) / float(height);
-            float b = 0.2f;
+            
+            float u = float(x) / float(width);
+            float v = float(y) / float(height);
 
-            int red = int(255.99 * r);
-            int green = int(255.99 * g);
-            int blue = int(255.99 * b);
-
-            writePpmPixel(red, green, blue);
+            Vector uvPosition = rayPosition(u, v);
+            
+            Ray rayPosition = ray(render.origin, uvPosition);
+            Vector clr = color(rayPosition);
+            
+            writePpmPixel(clr);
         }
     }
 }
