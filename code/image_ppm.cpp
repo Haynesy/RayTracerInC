@@ -31,22 +31,28 @@ void writePpmPixel(Vector vec){
     cout << red << " " << green << " " << blue << "\n";
 }
 
-bool hitSphere(Vector center, float radius, Ray ray){
+float hitSphere(Vector center, float radius, Ray ray){
     Vector originCenter = subtract(ray.origin, center);
     float a = dot(ray.direction, ray.direction);
     float b = 2.0f * dot(originCenter, ray.direction);
     float c = dot(originCenter, originCenter) - radius * radius;
     float discriminant = b * b - 4 * a * c;
-    return discriminant > 0;
+    if(discriminant < 0){
+        return -1.0f;
+    } else {
+        return (-b - sqrtf(discriminant)) / (2.0f * a); 
+    }
 }
 
 inline Vector color(Ray ray){
-    if(hitSphere(vector(0.0f, 0.0f, -1.0f), 0.5, ray))
+    float t = hitSphere(vector(0.0f, 0.0f, -1.0f), 0.5, ray);
+    if(t > 0.0)
     {
-        return RED;
+        Vector normal = makeUnitVector(subtract(pointAtParameter(ray, t), vector(0.0f, 0.0f, -1.0f)));
+        return multiply(vector(normal.x + 1, normal.y + 1, normal.z + 1), 0.5f);
     }
     Vector unitDirection = makeUnitVector(ray.direction);
-    float t = 0.5f * (unitDirection.y + 1.0f);
+    t = 0.5f * (unitDirection.y + 1.0f);
     Vector backgroundWhite = multiply(WHITE, 1.0f - t);
     Vector backgrountBlue = multiply(LIGHT_BLUE, t);
     return add(backgroundWhite, backgrountBlue);

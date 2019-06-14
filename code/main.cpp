@@ -6,6 +6,6 @@ using namespace std;
 
 int main(int argc, char *argv[]){
 
-    writePpmFile(200, 100);
+    writePpmFile(2000, 1000);
     return 0;
 }
