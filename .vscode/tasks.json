@@ -2,7 +2,7 @@
     "tasks": [
         {
             "type": "shell",
-            "label": "cl.exe build active file",
+            "label": "Build and run the project",
             "command": "build & run",
             "args": [],
             "group": {
